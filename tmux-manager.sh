@@ -5,28 +5,27 @@ tmus() {
   
   config=$(printf "%s\n" "${options[@]}" | fzf --prompt="Tmux config" --height=~50% --layout=reverse --border --exit-0)
 
-  case $config in
-    "New Session")
-      read -r -p "Enter Name for your session ==> " Sname
+  if [[ -z $config ]]; then
+    echo "Nothing Selected"
+  elif [[ $config == "New Session" ]]; then
+    read -r -p "Enter Name for your session ==> " Sname
+    if [[ -n $Sname ]]; then
       tmux new -s "$Sname"
-      ;;
-    "Attach to Session")
-      echo "Attaching to an existing session..."
-      tmuxSessions
-      ;;
-
-    "Remove Session")
-      echo "For removing select further"
-      tmuxSessionsRemoval
-      ;;
-    "Default")
-      echo "Starting a default session..."
-      tmux
-      ;;
-    *)
-      echo "Nothing selected"
-      ;;
-  esac
+    else
+      echo "Session name cannot be empty"
+    fi
+  elif [[ $config == "Attach to Session" ]]; then
+    echo "Attaching to an existing session..."
+    tmuxSessions
+  elif [[ $config == "Remove Session" ]]; then
+    echo "Removing a session..."
+    tmuxSessionsRemoval
+  elif [[ $config == "Default" ]]; then
+    echo "Starting a default session..."
+    tmux
+  else
+    echo "Invalid option selected"
+  fi
 }
 
 tmuxSessions() {
@@ -51,15 +50,14 @@ tmuxSessionsRemoval() {
   if [[ -z $session_name ]]; then
     echo "Nothing selected"
   elif [[ $session_name == "Kill all" ]]; then
-    for sess in $session_names
-    do
-      tmux kill-session -t "$sess"
+    for sess in "${session_names[@]}"; do
+      if [[ $sess != "Kill all" ]]; then
+        tmux kill-session -t "$sess"
+      fi
     done
-    
   else
     tmux kill-session -t "$session_name"
   fi
 }
-
 
 tmus
